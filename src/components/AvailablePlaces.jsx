@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Places from './Places.jsx';
 
 export default function AvailablePlaces({ onSelectPlace }) {
@@ -11,6 +12,13 @@ export default function AvailablePlaces({ onSelectPlace }) {
   // fetch('https://localhost:3000/places').then((response) => {
   //   return response.json();
   // }).then((data) => setAvailablePlaces(data.places));
+
+  // useEffect to solve the infinite loop issue. fetch method will be executed only once when the component is loaded for the first
+  useEffect(() => {
+      fetch('http://localhost:3000/places').then((response) => {
+        return response.json();
+      }).then((data) => setAvailablePlaces(data.places));
+  }, []);
 
   return (
     <Places
