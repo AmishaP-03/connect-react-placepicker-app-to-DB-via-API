@@ -3,6 +3,7 @@ import Places from './Places.jsx';
 
 export default function AvailablePlaces({ onSelectPlace }) {
   const [availablePlaces, setAvailablePlaces] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // HTTP request to fetch data from the backend API
 
@@ -25,9 +26,11 @@ export default function AvailablePlaces({ onSelectPlace }) {
   // We cannot use async directly on react specific elements like component functions, callback functions used in react hooks etc
   useEffect(() => {
     async function fetchData() {
+      setLoading(true);
       const response =  await fetch('http://localhost:3000/places');
       const data = await response.json();
       setAvailablePlaces(data.places);
+      setLoading(false);
     }
     fetchData();
   }, []);
@@ -36,6 +39,8 @@ export default function AvailablePlaces({ onSelectPlace }) {
     <Places
       title="Available Places"
       places={availablePlaces}
+      isLoading={loading}
+      loadingText={"Fetching data...."}
       fallbackText="No places available."
       onSelectPlace={onSelectPlace}
     />
