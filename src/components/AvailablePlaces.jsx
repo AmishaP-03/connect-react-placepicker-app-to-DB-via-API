@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ErrorDisplay from './ErrorDisplay.jsx';
 import Places from './Places.jsx';
+import { sortPlacesByDistance } from '../loc.js';
 
 export default function AvailablePlaces({ onSelectPlace }) {
   const [availablePlaces, setAvailablePlaces] = useState([]);
@@ -38,12 +39,19 @@ export default function AvailablePlaces({ onSelectPlace }) {
 
         // Do further steps only once we know that there is no error in response
         const data = await response.json();
-        setAvailablePlaces(data.places);
+
+        // Sort the places depending upon user's location
+        // getCurrentPosition takes some time to execute. When it is done fetching the current location of the user, the callback function passed to it will get executed.
+        navigator.geolocation.getCurrentPosition((position) => {
+          const sortedPlaces = sortPlacesByDistance(data.places, position.coords.latitude, position.coords.longitude);
+          setAvailablePlaces(sortedPlaces);
+          setLoading(false);
+        });
+        
       } catch (error) {
         setError(error);
+        setLoading(false);
       }
-
-      setLoading(false);
     }
     fetchData();
   }, []);
