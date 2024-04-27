@@ -63,8 +63,25 @@ function App() {
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current.id)
     );
 
+    try {
+      let response = await fetch('http://localhost:3000/user-places', {
+        method: 'PUT',
+        body: JSON.stringify({places: userPlaces.filter((place) => place.id !== selectedPlace.current.id) }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error in removing place');
+      }
+    } catch(error) {
+      setUserPlaces(userPlaces);
+      setError(error);
+    }
+
     setModalIsOpen(false);
-  }, []);
+  }, [userPlaces]);
 
   function handleErrorModalClose() {
     setError(null);
