@@ -34,7 +34,7 @@ export default function AvailablePlaces({ onSelectPlace }) {
       try {
         const response =  await fetch('http://localhost:3000/places');
         if (!response.ok) {
-          throw new Error("An error occured while fetching places");
+          throw new Error('An error occured while fetching places');
         }
 
         // Do further steps only once we know that there is no error in response
@@ -58,18 +58,18 @@ export default function AvailablePlaces({ onSelectPlace }) {
 
   if (error) {
     return <ErrorDisplay
-      title="ERROR"
+      title='ERROR'
       message={error.message}
     />;
   }
 
   return (
     <Places
-      title="Available Places"
+      title='Available Places'
       places={availablePlaces}
       isLoading={loading}
-      loadingText={"Fetching data...."}
-      fallbackText="No places available."
+      loadingText={'Fetching data....'}
+      fallbackText='No places available.'
       onSelectPlace={onSelectPlace}
     />
   );

@@ -3,6 +3,7 @@ import { useRef, useState, useCallback } from 'react';
 import Places from './components/Places.jsx';
 import Modal from './components/Modal.jsx';
 import DeleteConfirmation from './components/DeleteConfirmation.jsx';
+import ErrorDisplay from './components/ErrorDisplay.jsx';
 import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
 
@@ -13,6 +14,8 @@ function App() {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  const [error, setError] = useState();
+
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
     selectedPlace.current = place;
@@ -22,7 +25,9 @@ function App() {
     setModalIsOpen(false);
   }
 
-  function handleSelectPlace(selectedPlace) {
+  async function handleSelectPlace(selectedPlace) {
+
+    // Optimistic updating -> Updating both the local state and backend, eliminates the use of managing a loading state
     setUserPlaces((prevPickedPlaces) => {
       if (!prevPickedPlaces) {
         prevPickedPlaces = [];
@@ -32,6 +37,25 @@ function App() {
       }
       return [selectedPlace, ...prevPickedPlaces];
     });
+
+    if (!userPlaces.some((place) => place.id === selectedPlace.id)) {
+      try {
+        let response = await fetch('http://localhost:3000/user-places', {
+          method: 'PUT',
+          body: JSON.stringify({places: [...userPlaces, selectedPlace] }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+    
+        if (!response.ok) {
+          throw new Error('Error in updating places');
+        }
+      } catch(error) {
+        setUserPlaces(userPlaces);
+        setError(error);
+      }
+    }
   }
 
   const handleRemovePlace = useCallback(async function handleRemovePlace() {
@@ -42,8 +66,19 @@ function App() {
     setModalIsOpen(false);
   }, []);
 
+  function handleErrorModalClose() {
+    setError(null);
+  }
+
   return (
     <>
+      <Modal open={error} onClose={handleErrorModalClose}>
+        {error && <ErrorDisplay // Modal and its content will always be there in the DOM (in closed state), so we will get an error: reading props of undefined (reading message) initally without this check.
+          title='ERROR'
+          message={error.message}
+          onConfirm={handleErrorModalClose}
+        />}
+      </Modal>
       <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
         <DeleteConfirmation
           onCancel={handleStopRemovePlace}
